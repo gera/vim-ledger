@@ -24,13 +24,13 @@ Syntax highlighting (colours, currencies etc) are defined in
 Installation
 ------------
 
-With pathogen
-~~~~~~~~~~~~~
+#### With pathogen
+
 
 Clone the repo in your `~/.vim/bundle/` directory and you should be set.
 
-Without pathogen
-~~~~~~~~~~~~~~~~
+#### Without pathogen
+
 
 Put the individual `.vim` files in the corresponding vim directories (eg,
 `~/.vim/plugin` etc).
