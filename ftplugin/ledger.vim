@@ -5,11 +5,13 @@ import re
 from collections import defaultdict
 rTxnStart = re.compile(r'^(?P<date>\d+/\d+)\s+(?P<mark>\*\s+|\!\s+|)(?P<rest>[^*!]+)')
 
+accounts = defaultdict(lambda: 0)
 words = defaultdict(lambda: 0)
 
 def update_words():
     import vim
     global words
+    global accounts
     cb = vim.current.buffer
     for line in cb:
         match = rTxnStart.match(line)
@@ -18,7 +20,7 @@ def update_words():
         else:
             for wd in line.lower().split():
                 if ':' in wd:
-                    words[wd] += 1
+                    accounts[wd] += 1
 
 def isblank(line):
     return re.match(r'^\s*$', line) is not None
@@ -56,18 +58,25 @@ def toggle_transaction():
     b[rownum] = "%s %s %s" % (date, toggle(mark), rest)
     print "transaction state toggled on row", rownum
 
+def ledger_completion(dct, word):
+    return sorted(filter(lambda w: word in w, dct.keys()), key=lambda w: dct[w], reverse=True)
+
 EOFN
 
-function! Ledger_complete(word)
+function! Ledger_word_complete(word)
 python <<EOFN
 import vim
-
-def ledger_completion(word):
-    global words
-    return sorted(filter(lambda w: word in w, words.keys()), key=lambda w: words[w], reverse=True)
-
 wd = vim.eval('a:word')
-vim.command('let g:ledger_compl_ret='+str(ledger_completion(wd)))
+vim.command('let g:ledger_compl_ret='+str(ledger_completion(words, wd)))
+EOFN
+    return g:ledger_compl_ret
+endfunction
+
+function! Ledger_account_complete(word)
+python <<EOFN
+import vim
+wd = vim.eval('a:word')
+vim.command('let g:ledger_compl_ret='+str(ledger_completion(accounts, wd)))
 EOFN
     return g:ledger_compl_ret
 endfunction
@@ -93,12 +102,20 @@ def find_start():
 
 def get_start():
     vim.command('let l:start_pos='+str(find_start()))
+
+def is_txn_line():
+    vim.command('let l:is_txn='+str(int(rTxnStart.match(vim.current.line) is not None)))
+
 EOFN
     if a:findstart
         python get_start()
         return l:start_pos
     else
-        return Ledger_complete(a:base)
+        python is_txn_line()
+        if l:is_txn
+            return Ledger_word_complete(a:base)
+        else
+            return Ledger_account_complete(a:base)
 endfunction
 
 inoremap <F3> <ESC>:python toggle_transaction()<CR>i
