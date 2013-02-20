@@ -2,9 +2,10 @@
 python <<EOFN
 
 import re
+from collections import defaultdict
 rTxnStart = re.compile(r'^(?P<date>\d+/\d+)\s+(?P<mark>\*\s+|\!\s+|)(?P<rest>[^*!]+)')
 
-words = {}
+words = defaultdict(lambda: 0)
 
 def update_words():
     import vim
@@ -13,11 +14,11 @@ def update_words():
     for line in cb:
         match = rTxnStart.match(line)
         if match:
-            words[match.group("rest")] = True
+            words[match.group("rest")] += 1
         else:
             for wd in line.lower().split():
                 if ':' in wd:
-                    words[wd] = True
+                    words[wd] += 1
 
 def isblank(line):
     return re.match(r'^\s*$', line) is not None
@@ -63,7 +64,7 @@ import vim
 
 def ledger_completion(word):
     global words
-    return filter(lambda w: word in w, words.keys())
+    return sorted(filter(lambda w: word in w, words.keys()), key=lambda w: words[w], reverse=True)
 
 wd = vim.eval('a:word')
 vim.command('let g:ledger_compl_ret='+str(ledger_completion(wd)))
