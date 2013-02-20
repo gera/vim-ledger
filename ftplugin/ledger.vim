@@ -73,13 +73,30 @@ EOFN
 endfunction
 
 function! Ledger_completion(findstart, base)
+python <<EOFN
+import vim
+
+def find_start():
+    line = vim.current.line
+    startcol = vim.current.window.cursor[1]-1
+    match = rTxnStart.match(line)
+    if match:
+        if not match.group('rest'):
+            return match.endpos
+        return line.index(match.group('rest'))
+    else:
+        while startcol > 1:
+            if line[startcol-1] == ' ' and line[startcol-2] == ' ':
+                return startcol
+            startcol -= 1
+        return startcol+1
+
+def get_start():
+    vim.command('let l:start_pos='+str(find_start()))
+EOFN
     if a:findstart
-        let line = getline('.')
-        let startcol = col('.') - 1
-        while startcol > 0 && line[startcol - 1] =~ '\a\|:'
-            let startcol -= 1
-        endwhile
-        return startcol
+        python get_start()
+        return l:start_pos
     else
         return Ledger_complete(a:base)
 endfunction
