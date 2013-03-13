@@ -118,7 +118,7 @@ EOFN
             return Ledger_account_complete(a:base)
 endfunction
 
-inoremap <F3> <ESC>:python toggle_transaction()<CR>i
+inoremap <F3> <C-o>:python toggle_transaction()<CR>
 nnoremap <F3> :python toggle_transaction()<CR>
 vnoremap <F3> :python toggle_transaction()<CR>
 set iskeyword=@,48-57,_,:,192-255 
