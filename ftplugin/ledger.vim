@@ -3,7 +3,7 @@ python <<EOFN
 
 import re
 from collections import defaultdict
-rTxnStart = re.compile(r'^(?P<date>\d+/\d+)\s+(?P<mark>\*\s+|\!\s+|)(?P<rest>[^*!]+)')
+rTxnStart = re.compile(r'^(?P<date>\d+/\d+)\s+(?P<mark>\*\s+|\!\s+|)(?P<rest>[^*!]*)')
 
 accounts = defaultdict(lambda: 0)
 words = defaultdict(lambda: 0)
